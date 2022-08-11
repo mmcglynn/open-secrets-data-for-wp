@@ -100,4 +100,68 @@ class Open_Secrets_Data_For_Wp_Public {
 
 	}
 
+
+
+    // Add a comment here
+    public function open_secrets_data() {
+
+        // https://github.com/bpilkerton/php-crpapi
+        require_once('lib/crpapi.php');
+
+        // For when we are ready to get it from the post - get_the_ID()
+        $cid = 'N00035527';
+        $message = '';
+
+        if ( get_transient( $cid ) ) {
+            $message .= build_open_secrets_display( get_transient( $cid ) );
+        } else {
+
+            // Open Secrets data class request
+            $crp = new crp_api("candContrib",
+                Array(
+                    "cid"=>$cid,
+                    "cycle"=>"2022",
+                    "output" => "json"
+                ));
+            $data = $crp->get_data();
+
+            if ( set_transient($cid, $data, 600) ) {
+                $message .= build_open_secrets_display ( get_transient( $cid ) );
+            }
+
+        }
+
+        return $message;
+
+    }
+
+
+
+    function wp_remote_retrieve_response_code( $response ) {
+        if ( is_wp_error( $response ) || ! isset( $response['response'] ) || ! is_array( $response['response'] ) ) {
+            return '';
+        }
+        return $response['response']['code'];
+    }
+
+    function wp_remote_retrieve_body( $response ) {
+        if ( is_wp_error( $response ) || ! isset( $response['body'] ) ) {
+            return '';
+        }
+        return $response['body'];
+    }
+
+}
+
+function build_open_secrets_display( $json ) {
+    //return '<h4>build_open_secrets_display function</h4>';
+
+    //$json = file_get_contents("json/tweets.json");
+    $obj = json_decode($json);
+
+    // Convert JSON string into a PHP object.
+    $contributors = $obj->response->contributors->{'@attributes'};
+
+    return var_export($contributors);
+
 }
