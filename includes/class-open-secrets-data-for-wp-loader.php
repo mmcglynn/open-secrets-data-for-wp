@@ -124,6 +124,25 @@ class Open_Secrets_Data_For_Wp_Loader {
 			add_action( $hook['hook'], array( $hook['component'], $hook['callback'] ), $hook['priority'], $hook['accepted_args'] );
 		}
 
+        foreach ( $this->shortcodes as $hook ) {
+            add_shortcode( $hook['hook'], array( $hook['component'], $hook['callback'] ) );
+        }
+
 	}
+
+    /**
+     * Add a new shortcode to the collection to be registered with WordPress
+     *
+     * @since 1.0.0
+     * @param string $tag
+     * @param object $component
+     * @param string $callback
+     * @param int $priority
+     * @param int $accepted_args
+     */
+    public function add_shortcode( $tag, $component, $callback, $priority = 10, $accepted_args = 2 ) {
+        $this->shortcodes = $this->add( $this->shortcodes, $tag, $component, $callback, $priority, $accepted_args );
+    }
+
 
 }
