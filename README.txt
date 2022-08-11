@@ -1,18 +1,18 @@
 === Plugin Name ===
-Contributors: (this should be a list of wordpress.org userid's)
+Contributors: mmcglynn
 Donate link: https://www.reignitionllc.com/
-Tags: comments, spam
+Tags: api, opensecrets
 Requires at least: 3.0.1
 Tested up to: 3.4
 Stable tag: 4.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Here is a short description of the plugin.  This should be no more than 150 characters.  No markup here.
+For incorporating Open Secrets data into WordPress posts.
 
 == Description ==
 
-This is the long description.  No limit, and you can use Markdown (as well as in the following sections).
+A plugin that incorporates Open Secrets data into WordPress pages and posts.
 
 For backwards compatibility, if this section is missing, the full length of the short description will be used, and
 Markdown parsed.
