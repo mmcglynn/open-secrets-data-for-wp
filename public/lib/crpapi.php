@@ -9,7 +9,7 @@
  */
 
 // http://www.opensecrets.org/api/?method=getLegislators&id=NJ&apikey=a5f3d10fc4afedaa161edd6556dced39
-
+// http://www.opensecrets.org/api/?method=memPFDprofile&year=2016&cid=N00035527&output=json&apikey=a5f3d10fc4afedaa161edd6556dced39
 class crp_api {
 
     function __construct($method=NULL,$params=NULL) {
@@ -30,8 +30,12 @@ class crp_api {
     }
 
     private function load_params($params) {
-        $this->url = $this->base_url . "?method=" . $this->method . 
-            "&apikey=" . $this->api_key;
+
+        if ( $this->method == 'memPFDprofile') {
+            $this->url = $this->base_url . "?method=" . $this->method . "&year=2016&apikey=" . $this->api_key;
+        } else {
+            $this->url = $this->base_url . "?method=" . $this->method . "&apikey=" . $this->api_key;
+        }
 
         foreach ($params as $key=>$val) {
             $this->url .= "&" . $key . "=" . $val;
