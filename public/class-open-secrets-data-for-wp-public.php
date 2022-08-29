@@ -235,7 +235,7 @@ function display_cand_contrib( $obj ): string {
 		foreach ( $attributes as $attribute ) {
 			$str .= '<tr>';
 			foreach ( $attribute as $val ) {
-				if ( '0' !== ctype_digit( $val ) && $val ) {
+				if ( ctype_digit( $val ) ) {
 					$str .= '<td>$' . number_format( $val, 2, '.', ',' ) . '</td>';
 				} else {
 					$str .= "<td>$val</td>";
