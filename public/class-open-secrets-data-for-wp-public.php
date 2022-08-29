@@ -1,5 +1,4 @@
 <?php
-
 /**
  * The public-facing functionality of the plugin.
  *
@@ -44,8 +43,8 @@ class Open_Secrets_Data_For_Wp_Public {
 	 * Initialize the class and set its properties.
 	 *
 	 * @since    1.0.0
-	 * @param      string    $plugin_name       The name of the plugin.
-	 * @param      string    $version    The version of this plugin.
+	 * @param string $plugin_name The name of the plugin.
+	 * @param string $version The version of this plugin.
 	 */
 	public function __construct( $plugin_name, $version ) {
 
@@ -75,7 +74,6 @@ class Open_Secrets_Data_For_Wp_Public {
 
 		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/open-secrets-data-for-wp-public.css', array(), $this->version, 'all' );
 		//wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'dist/open-secrets-data-for-wp-public.css', array(), $this->version, 'all' );
-
     }
 
 	/**
@@ -101,193 +99,158 @@ class Open_Secrets_Data_For_Wp_Public {
 
 	}
 
+	/**
+	 * Comment goes here
+	 */
+	public function open_secrets_data() {
 
+		$message = '';
 
-    // Add a comment here
-    public function open_secrets_data() {
+		if ( !post_custom( 'cid' ) ) {
+			$message = '<p>No Open Secrets data exists for this post.</p>';
+		} else {
+			$cid = post_custom( 'cid' );
+			/* https://github.com/bpilkerton/php-crpapi */
+			require_once 'lib/crpapi.php';
 
-        // https://github.com/bpilkerton/php-crpapi
-        require_once('lib/crpapi.php');
+			/* For when we are ready to get it from the post - get_the_ID() */
+			$cid_ts  = $cid . '_ts';
 
-        // For when we are ready to get it from the post - get_the_ID()
-        $cid = 'N00035527';
-        $cid_ts = 'N00035527_ts';
-        $message = '';
+			/* If the TIMESTAMP and DATA transients exist, pull the data, otherwise set a new transient. */
+			if ( get_transient( $cid_ts ) && get_transient( $cid ) ) {
 
-        // Bypass transient for getting the markup right
+				/* For debugging, show the datestamp from the transient. */
+				$message .= '<h1>Pulled from transient</h1>';
+				$message .= '<p>' . get_transient( $cid_ts ) . '</p>';
 
-        // https://www.opensecrets.org/api/?method=candContrib&output=doc
-        $crp_cand = new crp_api("candContrib",
-            Array(
-                "cid"=>$cid,
-                "cycle"=>"2022",
-                "output" => "json"
-            ));
-        $candContrib = $crp_cand->get_data();
+				/* Get the serialized data from a transient. */
+				$data = get_transient( $cid );
 
-        $message .= display_candContrib ( $candContrib );
+				/* For debugging, show the status of the transient data. */
+				if ( empty( $data ) ) {
+					$message .= '<p>There\'s NO data in the transient.</p>';
+				} else {
+					$message .= '<p>There IS data in the transient.</p>';
+				}
 
-        // https://www.opensecrets.org/api/?method=memPFDprofile&output=doc
-        $crp_mem = new crp_api("memPFDprofile",
-            Array(
-                "cid"=>$cid,
-                "cycle"=>"2022",
-                "output" => "json"
-            ));
-        $memPFDprofile = $crp_mem->get_data();
+				/* Call the function that returns the contribution data in an HTML table. */
+				$message .= display_cand_contrib( $data );
 
-        $message .= display_memPFDprofile ( $memPFDprofile );
+			} else {
+				$message .= '<h1>Create a new transient.</h1>';
 
+				/* Set and report the TIMESTAMP transient. */
+				if ( set_transient( $cid_ts, gmdate( ' m/d/Y h:i:s A' ), 300 ) ) {
+					$message .= '<p>' . gmdate( ' m/d/Y h:i:s A' ) . '</p>';
+				}
 
-        // Timestamp
-//        if ( get_transient( $cid_ts ) ) {
-//            $message .= '<h1>Pulled from transient</h1>';
-//            $message .= '<p>' . get_transient( $cid_ts ) . '</p>';
-//        } else {
-//            $message .= '<h1>New transient created</h1>';
-//            if ( set_transient($cid_ts, date(' m/d/Y h:i:s A'), 600) ) {
-//                $message .= '<p>' . date(' m/d/Y h:i:s A') . '</p>';
-//            }
-//        }
+				/* https://www.opensecrets.org/api/?method=candContrib&output=doc */
+				$crp = new crp_api(
+					'candContrib',
+					array(
+						'cid'    => $cid,
+						'cycle'  => '2022',
+						'output' => 'json',
+					)
+				);
 
-//        if ( get_transient( $cid_ts ) && get_transient( $cid ) ) {
-//            $message .= '<h1>Pulled from transient</h1>';
-//
-//            $message .= '<p>' . get_transient( $cid_ts ) . '</p>';
-//
-//            $data = get_transient( $cid );
-//
-//            if(empty($data)) {
-//                $message .= 'There\'s NO data in the transient';
-//            } else {
-//                $message .= 'There IS data in the transient';
-//            }
-//
-//            $message .= build_open_secrets_display( $data );
-//
-//        } else {
-//            $message .= '<h1>A new request has been added to the transient.</h1>';
-//            // Open Secrets data class request
-//            $crp = new crp_api("candContrib",
-//                Array(
-//                    "cid"=>$cid,
-//                    "cycle"=>"2022",
-//                    "output" => "json"
-//                ));
-//            $data = $crp->get_data();
-//
-//            if ( set_transient($cid_ts, date(' m/d/Y h:i:s A'), 600) ) {
-//                $message .= '<p>' . date(' m/d/Y h:i:s A') . '</p>';
-//            }
-//
-//            if ( set_transient($cid, $data, 600) ) {
-//                $message .= build_open_secrets_display ( get_transient( $cid ) );
-//            }
-//        }
+				$cand_contrib = $crp->get_data();
 
-        return $message;
+				if ( set_transient( $cid, $cand_contrib, 300 ) ) {
+					$message .= '<p>Open Secrets data object saved as a transient.</p>';
+				}
 
-    }
+				$message .= display_cand_contrib( $cand_contrib );
+			}
+		}
 
-    function wp_remote_retrieve_response_code( $response ) {
-        if ( is_wp_error( $response ) || ! isset( $response['response'] ) || ! is_array( $response['response'] ) ) {
-            return '';
-        }
-        return $response['response']['code'];
-    }
+		return $message;
+	}
 
-    function wp_remote_retrieve_body( $response ) {
-        if ( is_wp_error( $response ) || ! isset( $response['body'] ) ) {
-            return '';
-        }
-        return $response['body'];
-    }
+	/**
+	 * @param $response
+	 * @return mixed|string
+	 */
+	private function wp_remote_retrieve_response_code( $response ) {
+		if ( is_wp_error( $response ) || ! isset( $response['response'] ) || ! is_array( $response['response'] ) ) {
+			return '';
+		}
+		return $response['response']['code'];
+	}
+
+	/**
+	 * @param $response
+	 * @return mixed|string
+	 */
+	private function wp_remote_retrieve_body( $response ) {
+		if ( is_wp_error( $response ) || ! isset( $response['body'] ) ) {
+			return '';
+		}
+		return $response['body'];
+	}
 
 }
 
-function display_candContrib( $obj ) {
+/**
+ * @param $obj
+ * @return string
+ */
+function display_cand_contrib( $obj ): string {
 
-    //$obj = json_decode($json);
+	$str = '<h2>The <i>build_open_secrets_display</i> function ran and was added to the message.</h2>';
 
-    //$str = '<h2>The <i>build_open_secrets_display</i> function ran and was added to the message.</h2>';
+	if ( empty( $obj ) ) {
+		$str .= 'The object is empty.';
+	} else {
+		$str .= 'The object is full.';
+	}
 
-//    if(empty($obj)) {
-//        $str .= 'The object is empty.';
-//    } else {
-//        $str .= 'The object is full.';
-//    }
+	$contributors = $obj['response']['contributors']['@attributes'];
 
+	$contributor = $obj['response']['contributors']['contributor'];
 
+	if ( $contributors['cand_name'] ) {
+		$str .= "<h2>$contributors[cand_name]</h2>";
+	}
 
-    // Convert JSON string into a PHP object.
-    //$contributors = $obj->response->contributors->{'@attributes'};
-    $contributors = $obj['response']['contributors']['@attributes'];
+	if ( $contributors['cycle'] ) {
+		$str = "<h3>Top contributors for the $contributors[cycle] election cycle.</h3>";
+	}
 
-    $contributor = $obj['response']['contributors']['contributor'];
+	if ( $contributors['notice'] ) {
+		$str .= "<p>$contributors[notice]</p>";
+	}
 
-    //var_dump($contributor);
+	$str .= '<table class="op-data-table">';
+	$str .= '<thead>';
+	$str .= '<tr>';
+	$str .= '<th>Organization Name</th>';
+	$str .= '<th>Total</th>';
+	$str .= '<th>PACs</th>';
+	$str .= '<th>Individuals</th>';
+	$str .= '</thead>';
+	$str .= '<tbody>';
 
-//    if( $contributors['cand_name'] ) {
-//        $str .= "<h2>$contributors[cand_name]</h2>";
-//    }
+	foreach ( $contributor as $attributes ) {
+		foreach ( $attributes as $attribute ) {
+			$str .= '<tr>';
+			foreach ( $attribute as $val ) {
+				if ( '0' !== ctype_digit( $val ) && $val ) {
+					$str .= '<td>$' . number_format( $val, 2, '.', ',' ) . '</td>';
+				} else {
+					$str .= "<td>$val</td>";
+				}
+			}
+			$str .= '</tr>';
+		}
+	}
 
-    if( $contributors['cycle'] ) {
-        $str = "<h3>Top contributors for the $contributors[cycle] election cycle.</h3>";
-    }
+	$str .= '</tbody>';
+	$str .= '</table>';
 
-    if( $contributors['notice'] ) {
-        $str .= "<p>$contributors[notice]</p>";
-    }
-    $str .= "<table class=\"op-data-table\">";
-    $str .= "<thead>";
-    $str .= "<tr>";
-    $str .= "<th>Oragnization Name</th>";
-    $str .= "<th>Total</th>";
-    $str .= "<th>PACs</th>";
-    $str .= "<th>Individuals</th>";
-    $str .= "</thead>";
-    $str .= "<tbody>";
+	if ( $contributors['source'] ) {
+		$str .= "<small>Data provided by <a href=\"$contributors[source]\" target='_blank'>Open Secrets</a>.</small>";
+	}
 
-    foreach ($contributor as $attributes) {
-        foreach ($attributes as $attribute) {
-            $str .= "<tr>";
-            foreach ($attribute as $val) {
-                if ( ctype_digit($val) && $val !== '0'  ) {
-                    $str .= "<td>$" . number_format($val, 2, ".", ",") . "</td>";
-                } else {
-                    $str .= "<td>$val</td>";
-                }
-            }
-            $str .= "</tr>";
-        }
-    }
-
-    $str .= "</tbody>";
-    $str .= "</table>";
-
-    if( $contributors['source'] ) {
-        $str .= "<small>Data provided by <a href=\"$contributors[source]\" target='_blank'>Open Secrets</a>.</small>";
-    }
-
-    //$str .=  var_dump($obj);
-    //$str .=  var_dump($contributors);
-
-    return $str;
-
-}
-
-
-function display_memPFDprofile( $obj ) {
-
-    // Convert JSON string into a PHP object.
-    $contributors = $obj['response']['member_profile']['@attributes'];
-
-    $str = '';
-
-    foreach ($contributors as $contributor) {
-        $str .= "<p>$contributor</p>";
-    }
-
-    return $str;
-
+	return $str;
 }
