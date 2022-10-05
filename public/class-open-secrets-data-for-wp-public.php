@@ -73,8 +73,8 @@ class Open_Secrets_Data_For_Wp_Public {
 		 */
 
 		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/open-secrets-data-for-wp-public.css', array(), $this->version, 'all' );
-		//wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'dist/open-secrets-data-for-wp-public.css', array(), $this->version, 'all' );
-    }
+		// wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'dist/open-secrets-data-for-wp-public.css', array(), $this->version, 'all' );
+		}
 
 	/**
 	 * Register the JavaScript for the public-facing side of the site.
@@ -106,7 +106,7 @@ class Open_Secrets_Data_For_Wp_Public {
 
 		$message = '';
 
-		if ( !post_custom( 'cid' ) ) {
+		if ( ! post_custom( 'cid' ) ) {
 			$message = '<p>No Open Secrets data exists for this post.</p>';
 		} else {
 			$cid = post_custom( 'cid' );
