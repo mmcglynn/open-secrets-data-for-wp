@@ -14,7 +14,7 @@ class crp_api {
 
     function __construct($method=NULL,$params=NULL) {
 
-        $this->api_key = "a5f3d10fc4afedaa161edd6556dced39";
+        $this->api_key  = "a5f3d10fc4afedaa161edd6556dced39";
         $this->base_url = "https://www.opensecrets.org/api/";
         $this->output = "json";
         
@@ -29,7 +29,7 @@ class crp_api {
         
     }
 
-    private function load_params($params) {
+    private function load_params( $params ) {
 
         if ( $this->method == 'memPFDprofile') {
             $this->url = $this->base_url . "?method=" . $this->method . "&year=2016&apikey=" . $this->api_key;
@@ -37,7 +37,7 @@ class crp_api {
             $this->url = $this->base_url . "?method=" . $this->method . "&apikey=" . $this->api_key;
         }
 
-        foreach ($params as $key=>$val) {
+        foreach ( $params as $key=>$val ) {
             $this->url .= "&" . $key . "=" . $val;
             $this->$key = $val;
         }
@@ -45,50 +45,93 @@ class crp_api {
         return;
     }
 
-    // MM - true now set to flase for testing
-    public function get_data($use_cache=false) {
-    
-        if ($use_cache and file_exists($this->cache_hash) and (time() - filectime($this->cache_hash) < $this->cache_time)) {
-        
-            $this->cache_hit = true;
-            $file = fopen($this->cache_hash,"r");
-            $this->data = stream_get_contents($file);
-            $this->data = gzuncompress($this->data);
-            $this->data = unserialize($this->data);
-            fclose($file);
-            $this->response_headers = "No http request sent, using cache";
+    public function get_data() {
 
-        } else {
-            $this->cache_hit = false;
-            $this->data = file_get_contents($this->url);
-            $this->response_headers = $http_response_header;
-            
-            switch ($this->output) {
-                case "json":
-                    //echo 'you picked json';
-                    //var_dump($this->data);
-                    $this->data = json_decode($this->data,true);
-                    break;
-                case "xml":
-                    //echo 'you picked xml';
-                    //var_dump($this->data);
-                    $this->data = simplexml_load_string($this->data);
-                    break;
-                default:
-                    die("Unknown output type.  Use 'json' or 'xml'");
-            }
+        $url = $this->url;
 
-            if ($use_cache) {
-                $file = fopen($this->cache_hash,"w");
-                $store = serialize($this->data);
-                $store = gzcompress($store);
-                fwrite($file,$store);
-                fclose($file);
-            }
+        $ch = curl_init( $url );
+
+        curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+
+        $this->data = curl_exec($ch);
+
+        // Debug
+//        $info = curl_getinfo($ch);
+//        $message = '<p>gettype($this->data): ' . gettype($this->data) . '</p>';
+//        $message .= '<p>$this->url: ' . $this->url . '</p>';
+//        $message .= '<ul>';
+//        $message .= '<li>' . $info['total_time'] . '</li>';
+//        $message .= '<li>' . $info['size_download'] . '</li>';
+//        $message .= '<li>' . $info['speed_download'] . '</li>';
+//        $message .= '<li>' . $info['download_content_length'] . '</li>';
+//        $message .= '<li>' . $info['total_time_us'] . '</li>';
+//        $message .= '</ul>';
+//        $message .= '<p>$http_response_header: ' . $http_response_header . '</p>';
+//        echo $message;
+
+        curl_close( $ch );
+
+        switch ( $this->output ) {
+            case "json":
+                $this->data = json_decode( $this->data,true );
+                break;
+            case "xml":
+                $this->data = simplexml_load_string( $this->data );
+                break;
+            default:
+                die( "Unknown output type.  Use 'json' or 'xml'" );
         }
-        
+
         return $this->data;
+
     }
+
+    // MM - true now set to false for testing
+//    public function get_data($use_cache=true) {
+//
+//        if ($use_cache and file_exists($this->cache_hash) and (time() - filectime($this->cache_hash) < $this->cache_time)) {
+//
+//            $this->cache_hit = true;
+//            $file = fopen($this->cache_hash,"r");
+//            $this->data = stream_get_contents($file);
+//            $this->data = gzuncompress($this->data);
+//            $this->data = unserialize($this->data);
+//            fclose($file);
+//            $this->response_headers = "No http request sent, using cache";
+//
+//        } else {
+//            $this->cache_hit = false;
+//            $this->data = file_get_contents($this->url);
+//            $this->response_headers = $http_response_header;
+//
+//            switch ($this->output) {
+//                case "json":
+//                    //echo 'you picked json';
+//                    //var_dump($this->data);
+//                    $this->data = json_decode($this->data,true);
+//                    break;
+//                case "xml":
+//                    //echo 'you picked xml';
+//                    //var_dump($this->data);
+//                    $this->data = simplexml_load_string($this->data);
+//                    break;
+//                default:
+//                    die("Unknown output type.  Use 'json' or 'xml'");
+//            }
+//
+//            if ($use_cache) {
+//                $file = fopen($this->cache_hash,"w");
+//                $store = serialize($this->data);
+//                $store = gzcompress($store);
+//                fwrite($file,$store);
+//                fclose($file);
+//            }
+//        }
+//
+//        return $this->data;
+//    }
     
     function get_cache_status() {
         return $this->cache_hit;
