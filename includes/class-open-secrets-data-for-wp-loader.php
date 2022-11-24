@@ -124,9 +124,9 @@ class Open_Secrets_Data_For_Wp_Loader {
 			add_action( $hook['hook'], array( $hook['component'], $hook['callback'] ), $hook['priority'], $hook['accepted_args'] );
 		}
 
-        foreach ( $this->shortcodes as $hook ) {
-            add_shortcode( $hook['hook'], array( $hook['component'], $hook['callback'] ) );
-        }
+		foreach ( $this->shortcodes as $hook ) {
+			add_shortcode( $hook['hook'], array( $hook['component'], $hook['callback'] ) );
+		}
 
 	}
 
