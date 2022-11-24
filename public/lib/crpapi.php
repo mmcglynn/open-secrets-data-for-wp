@@ -45,11 +45,12 @@ class crp_api {
         return;
     }
 
+    // We'll want to/ dupllicate this function with
+    //         // wp_remote_request( string $url, array $args = array() )
+
     public function get_data() {
 
-        $url = $this->url;
-
-        $ch = curl_init( $url );
+        $ch = curl_init( $this->url );
 
         curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
@@ -72,10 +73,9 @@ class crp_api {
 //        echo $message;
 
         curl_close( $ch );
-
         switch ( $this->output ) {
             case "json":
-                $this->data = json_decode( $this->data,true );
+                $this->data = json_decode( $this->data, true );
                 break;
             case "xml":
                 $this->data = simplexml_load_string( $this->data );
@@ -83,56 +83,9 @@ class crp_api {
             default:
                 die( "Unknown output type.  Use 'json' or 'xml'" );
         }
-
         return $this->data;
-
     }
 
-    // MM - true now set to false for testing
-//    public function get_data($use_cache=true) {
-//
-//        if ($use_cache and file_exists($this->cache_hash) and (time() - filectime($this->cache_hash) < $this->cache_time)) {
-//
-//            $this->cache_hit = true;
-//            $file = fopen($this->cache_hash,"r");
-//            $this->data = stream_get_contents($file);
-//            $this->data = gzuncompress($this->data);
-//            $this->data = unserialize($this->data);
-//            fclose($file);
-//            $this->response_headers = "No http request sent, using cache";
-//
-//        } else {
-//            $this->cache_hit = false;
-//            $this->data = file_get_contents($this->url);
-//            $this->response_headers = $http_response_header;
-//
-//            switch ($this->output) {
-//                case "json":
-//                    //echo 'you picked json';
-//                    //var_dump($this->data);
-//                    $this->data = json_decode($this->data,true);
-//                    break;
-//                case "xml":
-//                    //echo 'you picked xml';
-//                    //var_dump($this->data);
-//                    $this->data = simplexml_load_string($this->data);
-//                    break;
-//                default:
-//                    die("Unknown output type.  Use 'json' or 'xml'");
-//            }
-//
-//            if ($use_cache) {
-//                $file = fopen($this->cache_hash,"w");
-//                $store = serialize($this->data);
-//                $store = gzcompress($store);
-//                fwrite($file,$store);
-//                fclose($file);
-//            }
-//        }
-//
-//        return $this->data;
-//    }
-    
     function get_cache_status() {
         return $this->cache_hit;
     }
