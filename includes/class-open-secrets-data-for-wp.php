@@ -173,13 +173,13 @@ class Open_Secrets_Data_For_Wp {
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
 
-        // Add shortcode
-        $this->loader->add_shortcode( 'open-secrets', $plugin_public, 'open_secrets_data' );
+		/* Add shortcode */
+		$this->loader->add_shortcode( 'open-secrets', $plugin_public, 'open_secrets_data' );
 
 	}
 
 	/**
-	 * Run the loader to execute all of the hooks with WordPress.
+	 * Run the loader to execute all the hooks with WordPress.
 	 *
 	 * @since    1.0.0
 	 */
