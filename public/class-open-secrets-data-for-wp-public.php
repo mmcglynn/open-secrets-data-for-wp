@@ -74,7 +74,7 @@ class Open_Secrets_Data_For_Wp_Public {
 
 		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/open-secrets-data-for-wp-public.css', array(), $this->version, 'all' );
 		// wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'dist/open-secrets-data-for-wp-public.css', array(), $this->version, 'all' );
-		}
+	}
 
 	/**
 	 * Register the JavaScript for the public-facing side of the site.
@@ -104,10 +104,13 @@ class Open_Secrets_Data_For_Wp_Public {
 	 */
 	public function open_secrets_data() {
 
+		$debug   = false;
 		$message = '';
 
 		if ( ! post_custom( 'cid' ) ) {
-			$message = '<p>No Open Secrets data exists for this post.</p>';
+			if($debug) {
+				$message = '<p>No Open Secrets data exists for this post.</p>';
+			}
 		} else {
 			$cid = post_custom( 'cid' );
 			/* https://github.com/bpilkerton/php-crpapi */
@@ -120,26 +123,30 @@ class Open_Secrets_Data_For_Wp_Public {
 			if ( get_transient( $cid_ts ) && get_transient( $cid ) ) {
 
 				/* For debugging, show the datestamp from the transient. */
-				$message .= '<h1>Pulled from transient</h1>';
-				$message .= '<p>' . get_transient( $cid_ts ) . '</p>';
+				if($debug) {
+					$message .= '<h1>Pulled from transient</h1>';
+					$message .= '<p>' . get_transient($cid_ts) . '</p>';
+				}
 
 				/* Get the serialized data from a transient. */
 				$data = get_transient( $cid );
 
 				/* For debugging, show the status of the transient data. */
-				if ( empty( $data ) ) {
-					$message .= '<p>There\'s NO data in the transient.</p>';
-				} else {
-					$message .= '<p>There IS data in the transient.</p>';
+				if($debug) {
+					if (empty($data)) {
+						$message .= '<p>There\'s NO data in the transient.</p>';
+					} else {
+						$message .= '<p>There IS data in the transient.</p>';
+					}
 				}
 
 				/* Call the function that returns the contribution data in an HTML table. */
 				$message .= display_cand_contrib( $data );
 
 			} else {
-				$message .= '<h1>Create a new transient.</h1>';
 
 				/* Set and report the TIMESTAMP transient. */
+				$message .= '<h1>Create a new transient.</h1>';
 				if ( set_transient( $cid_ts, gmdate( ' m/d/Y h:i:s A' ), 300 ) ) {
 					$message .= '<p>' . gmdate( ' m/d/Y h:i:s A' ) . '</p>';
 				}
@@ -156,8 +163,13 @@ class Open_Secrets_Data_For_Wp_Public {
 
 				$cand_contrib = $crp->get_data();
 
-				if ( set_transient( $cid, $cand_contrib, 300 ) ) {
-					$message .= '<p>Open Secrets data object saved as a transient.</p>';
+				set_transient( $cid, $cand_contrib, 14400 );
+
+				// Debug
+				if($debug) {
+					if (set_transient($cid, $cand_contrib, 300)) {
+						$message .= '<p>Open Secrets data object saved as a transient.</p>';
+					}
 				}
 
 				$message .= display_cand_contrib( $cand_contrib );
