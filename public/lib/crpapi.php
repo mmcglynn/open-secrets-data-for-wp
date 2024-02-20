@@ -12,35 +12,55 @@
 // http://www.opensecrets.org/api/?method=memPFDprofile&year=2016&cid=N00035527&output=json&apikey=a5f3d10fc4afedaa161edd6556dced39
 class crp_api {
 
-    function __construct($method=NULL,$params=NULL) {
+    function __construct( $params = NULL ) {
 
-        $this->api_key  = "a5f3d10fc4afedaa161edd6556dced39";
-        $this->base_url = "https://www.opensecrets.org/api/";
-        $this->output = "json";
+        // echo '<h4>$params</h4>';
+        // var_dump($params);
+
+        $this->method   = $params['method'];
+        $this->cid      = $params['cid'];
+        $this->cycle    = $params['cycle'];
+        $this->api_key  = $params['api_key'];
+        $this->base_url = $params['base_url'];
+        $this->output   = "json";
         
+        // echo '[' . $this->api_key . ']<br>';
+        // echo '[' . $this->base_url . ']<br>';
+
         //Allow output type to be overridden on object instantiation
-        $this->output = isset($params['output']) ? $params['output']: $this->output;
-        $this->method = $method;
+        //$this->output = isset($params['output']) ? $params['output']: $this->output;
+        //$this->method = $method;
         self::load_params($params);
         
-        $this->file_hash = md5($method . "," . implode(",",$params));
-        $this->cache_hash = "dataCache/" . $this->file_hash;
-        $this->cache_time = 86400; #one day
+        // echo '[' . $this->method . ']<br>';
+
+        //$this->file_hash = md5($method . "," . implode(",",$params));
+        //$this->cache_hash = "dataCache/" . $this->file_hash;
+        //$this->cache_time = 86400; #one day
         
     }
 
     private function load_params( $params ) {
-
+        //echo 'Called load_params()' . '<br>';
         if ( $this->method == 'memPFDprofile') {
             $this->url = $this->base_url . "?method=" . $this->method . "&year=2016&apikey=" . $this->api_key;
         } else {
-            $this->url = $this->base_url . "?method=" . $this->method . "&apikey=" . $this->api_key;
+            $this->url = $this->base_url 
+                        . "?method=" . $this->method 
+                        . "&apikey=" . $this->api_key 
+                        . "&cid=" . $this->cid 
+                        . "&cycle=" . $this->cycle 
+                        . "&output=" . $this->output;
         }
 
-        foreach ( $params as $key=>$val ) {
-            $this->url .= "&" . $key . "=" . $val;
-            $this->$key = $val;
-        }
+        // Not yet until above is resolved
+        // foreach ( $params as $key=>$val ) {
+        //     //$this->url .= "&" . $key . "=" . $val;
+        //     //$this->$key = $val;
+        //     echo $key . "=" . $val;
+        // }
+
+        //echo $this->url;
 
         return;
     }
@@ -50,27 +70,34 @@ class crp_api {
 
     public function get_data() {
 
+        //echo 'Called get_data()' . '<br>';
+
         $ch = curl_init( $this->url );
 
         curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
         curl_setopt($ch, CURLOPT_TIMEOUT, 5);
 
+        //echo curl_exec($ch);
+
         $this->data = curl_exec($ch);
 
         // Debug
-//        $info = curl_getinfo($ch);
-//        $message = '<p>gettype($this->data): ' . gettype($this->data) . '</p>';
-//        $message .= '<p>$this->url: ' . $this->url . '</p>';
-//        $message .= '<ul>';
-//        $message .= '<li>' . $info['total_time'] . '</li>';
-//        $message .= '<li>' . $info['size_download'] . '</li>';
-//        $message .= '<li>' . $info['speed_download'] . '</li>';
-//        $message .= '<li>' . $info['download_content_length'] . '</li>';
-//        $message .= '<li>' . $info['total_time_us'] . '</li>';
-//        $message .= '</ul>';
-//        $message .= '<p>$http_response_header: ' . $http_response_header . '</p>';
-//        echo $message;
+        /*
+        $info = curl_getinfo($ch);
+        $message = '<p>gettype($this->data): ' . gettype($this->data) . '</p>';
+        $message .= '<p>$this->url: ' . $this->url . '</p>';
+        $message .= '<ul>';
+        $message .= '<li>total_time: ' . $info['total_time'] . '</li>';
+        $message .= '<li>size_download: ' . $info['size_download'] . '</li>';
+        $message .= '<li>speed_download: ' . $info['speed_download'] . '</li>';
+        $message .= '<li>download_content_length: ' . $info['download_content_length'] . '</li>';
+        $message .= '<li>total_time_us: ' . $info['total_time_us'] . '</li>';
+        $message .= '</ul>';
+        $message .= '<p>$http_response_header: ' . get_response_headers() . '</p>';
+        echo $message;
+        */
+        //var_dump($http_response_header);
 
         curl_close( $ch );
         switch ( $this->output ) {
@@ -83,16 +110,16 @@ class crp_api {
             default:
                 die( "Unknown output type.  Use 'json' or 'xml'" );
         }
+
         return $this->data;
     }
 
-    function get_cache_status() {
-        return $this->cache_hit;
-    }
+//    function get_cache_status() {
+//        return $this->cache_hit;
+//    }
 
-    function get_response_headers() {
-        return $this->response_headers;
-    }
+//    function get_response_headers() {
+//        return $this->response_headers;
+//    }
     
 }
-?>

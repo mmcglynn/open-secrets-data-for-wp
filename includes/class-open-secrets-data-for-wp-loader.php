@@ -50,6 +50,7 @@ class Open_Secrets_Data_For_Wp_Loader {
 
 		$this->actions = array();
 		$this->filters = array();
+        $this->shortcodes = array();
 
 	}
 
@@ -143,6 +144,5 @@ class Open_Secrets_Data_For_Wp_Loader {
     public function add_shortcode( $tag, $component, $callback, $priority = 10, $accepted_args = 2 ) {
         $this->shortcodes = $this->add( $this->shortcodes, $tag, $component, $callback, $priority, $accepted_args );
     }
-
 
 }

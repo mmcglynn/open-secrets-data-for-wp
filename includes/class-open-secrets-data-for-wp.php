@@ -157,6 +157,15 @@ class Open_Secrets_Data_For_Wp {
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
 
+        // Add admin menu items
+        $this->loader->add_action( 'admin_menu', $plugin_admin, 'osd_admin_menu' );
+
+        // Register general settings
+        $this->loader->add_action( 'admin_init', $plugin_admin, 'osd_register_settings' );
+
+        /* Define settings */
+        //$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'open_secrets_data_settings' );
+
 	}
 
 	/**

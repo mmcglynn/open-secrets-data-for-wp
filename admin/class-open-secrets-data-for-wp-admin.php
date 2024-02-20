@@ -100,4 +100,37 @@ class Open_Secrets_Data_For_Wp_Admin {
 
 	}
 
+    /**
+     * Add custom menu.
+     *
+     * @since    1.0.1
+     */
+    public function osd_admin_menu() {
+        add_options_page ( 'Open Secrets Data Plugin Settings', 'Open Secrets Data', 'manage_options', 'open-secrets-data-for-wp/mainsettings.php', array($this, 'osd_admin_page'), 'dashicons-money-alt', 80);
+    }
+
+    /**
+     * Add admin page.
+     *
+     * @since    1.0.1
+     */
+    public function osd_admin_page(){
+        // Return view
+        require_once 'partials/open-secrets-data-for-wp-admin-display.php';
+    }
+
+    /**
+     * Register plugin fields for plugin settings.
+     *
+     * @since    1.0.1
+     */
+    public function osd_register_settings() {
+        // Registers all settings for general settings page
+        register_setting( 'osd_api_settings', 'osd_api_key' );
+        register_setting( 'osd_api_settings', 'osd_base_url' );
+        register_setting( 'osd_api_settings', 'osd_cycle' );
+        // Not currently handling this format
+        //register_setting( 'osd_api_settings', 'output_type' );
+    }
+
 }
